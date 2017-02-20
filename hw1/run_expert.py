@@ -41,25 +41,28 @@ def main():
         returns = []
         observations = []
         actions = []
+        steps = []
         for i in range(args.num_rollouts):
             print('iter', i)
             obs = env.reset()
             done = False
             totalr = 0.
-            steps = 0
+            totalsteps = 0
             while not done:
                 action = policy_fn(obs[None, :])
                 observations.append(obs)
                 actions.append(action)
                 obs, r, done, _ = env.step(action)
                 totalr += r
-                steps += 1
+                totalsteps += 1
                 if args.render:
                     env.render()
-                if steps % 100 == 0: print("%i/%i"%(steps, max_steps))
-                if steps >= max_steps:
+                if totalsteps % 100 == 0: print("%i/%i"%(totalsteps, max_steps))
+                if totalsteps >= max_steps:
                     break
             returns.append(totalr)
+            steps.append(totalsteps)
+
 
         print('returns', returns)
         print('mean return', np.mean(returns))
@@ -67,9 +70,10 @@ def main():
 
         expert_data = {'observations': np.array(observations),
                        'actions': np.array(actions),
-                       'returns': np.array(returns)}
+                       'returns': np.array(returns),
+                       'steps': np.array(steps)}
 
-        pickle.dump(expert_data, open('/runs/imitation/{}'.format(args.envname), 'rb'))
+        pickle.dump(expert_data, open('imitation/original/{}.pkl'.format(args.envname), 'wb+'))
 
 if __name__ == '__main__':
     main()
