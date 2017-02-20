@@ -48,7 +48,7 @@ def main():
             totalr = 0.
             steps = 0
             while not done:
-                action = policy_fn(obs[None,:])
+                action = policy_fn(obs[None, :])
                 observations.append(obs)
                 actions.append(action)
                 obs, r, done, _ = env.step(action)
@@ -66,7 +66,10 @@ def main():
         print('std of return', np.std(returns))
 
         expert_data = {'observations': np.array(observations),
-                       'actions': np.array(actions)}
+                       'actions': np.array(actions),
+                       'returns': np.array(returns)}
+
+        pickle.dump(expert_data, open('/runs/imitation/{}'.format(args.envname), 'rb'))
 
 if __name__ == '__main__':
     main()
