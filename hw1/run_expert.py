@@ -73,7 +73,7 @@ def main():
                        'returns': np.array(returns),
                        'steps': np.array(steps)}
 
-        pickle.dump(expert_data, open('imitation/original/{}.pkl'.format(args.envname), 'wb+'))
+        #pickle.dump(expert_data, open('imitation/original/{}.pkl'.format(args.envname), 'wb+'))
 
 if __name__ == '__main__':
     main()
