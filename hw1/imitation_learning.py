@@ -78,18 +78,8 @@ def run_regressor(expert_data, model, env_name, num_rollouts=20, render=False):
                         'steps': np.array(steps_numbers)}
         expert_data['model returns'] = pd.Series(model_data['returns'], index=expert_data.index)
         pickle.dump(model_data, open('imitation/tnn_imitation/{}.pkl'.format(env_name), 'wb+'))
-    return report_results(expert_data, env_name)
-
-
-def report_results(report_data, env):
-    plt.figure(figsize=(5, 5))
-    plt.plot(np.arange(1.0, 21.0, 1.0), report_data['expert returns'], 'r-')
-    plt.plot(np.arange(1.0, 21.0, 1.0), report_data['model returns'], 'g-')
-    plt.ylabel('returns')
-    plt.xlabel('rollouts')
-    plt.title('{} returns: imitation learning vs expert'.format(env))
-    plt.show()
     return
+
 
 if __name__ == '__main__':
     main()

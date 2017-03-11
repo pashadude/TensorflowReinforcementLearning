@@ -94,7 +94,7 @@ def run_dagger(env_name, num_runs, batch_size, steps):
         df = pd.DataFrame(stats).T
         df.index.name = 'iterations'
         df.to_csv('DAgger_results/{}_DAgger.csv'.format(env_name))
-        pickle_name = 'DAgger_results/{}_DAgger_rewards.p'.format(env_name)
+        pickle_name = 'DAgger_results/{}_DAgger_rewards.pkl'.format(env_name)
         pickle.dump(rewards, open(pickle_name, 'wb+'))
     return
 
