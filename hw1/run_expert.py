@@ -16,6 +16,7 @@ import tf_util
 import gym
 import load_policy
 
+
 def main():
     import argparse
     parser = argparse.ArgumentParser()
@@ -67,6 +68,7 @@ def main():
         print('returns', returns)
         print('mean return', np.mean(returns))
         print('std of return', np.std(returns))
+        print('steps', steps)
 
         expert_data = {'observations': np.array(observations),
                        'actions': np.array(actions),

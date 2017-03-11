@@ -6,6 +6,7 @@ import pickle
 import tensorflow as tf
 import tf_util
 import argparse
+import tqdm
 
 
 def main():
@@ -14,6 +15,7 @@ def main():
     args = parser.parse_args()
     inputs, outputs, evaluations = extract_imitation(args.env)
     model = train_regressor(inputs, outputs)
+    run_regressor(evaluations, model, args.env)
 
 
 def extract_imitation(env):
@@ -24,8 +26,8 @@ def extract_imitation(env):
     return inputs, outputs, evaluations
 
 
-def train_regressor(inputs, outputs, layers=[64, 64], activation_function=tf.nn.tanh, batch_size=50,
-                    epochs=200, steps=10000):
+def train_regressor(inputs, outputs, layers=[64, 64], activation_function=tf.nn.tanh, batch_size=10,
+                    epochs=1000, steps=10000):
     inputs_dim = inputs.shape[1]
     feature_columns = [tf.contrib.layers.real_valued_column("", dimension=inputs_dim)]
     outputs_dim = outputs.shape[2]
@@ -41,29 +43,30 @@ def train_regressor(inputs, outputs, layers=[64, 64], activation_function=tf.nn.
     return estimator
 
 
-def run_regressor(expert_data, model, env, num_rollouts=20, render=False):
-    env_gym = gym.make(env)
-    max_steps = env.spec.tags.get('wrapper_config.TimeLimit.max_episode_steps')
+def run_regressor(expert_data, model, env_name, num_rollouts=20, render=False):
     returns = []
     observations = []
     actions = []
     steps_numbers = []
+
     with tf.Session():
+        env = gym.make(env_name)
+        max_steps = env.spec.timestep_limit
         tf_util.initialize()
-        for i in range(num_rollouts):
-            obs = env_gym.reset()
+        for i in tqdm.tqdm(range(num_rollouts)):
+            obs = env.reset()
             done = False
             totalr = 0.
             steps = 0
             while not done:
-                action = model.predict(obs[None, :])
+                action = model.predict(obs[None, :], as_iterable=False)
                 observations.append(obs)
                 actions.append(action)
-                obs, r, done, _ = env_gym.step(action)
+                obs, r, done, _ = env.step(action)
                 totalr += r
                 steps += 1
                 if render:
-                    env_gym.render()
+                    env.render()
                 if steps >= max_steps:
                     break
             steps_numbers.append(steps)
@@ -74,14 +77,17 @@ def run_regressor(expert_data, model, env, num_rollouts=20, render=False):
                         'returns': np.array(returns),
                         'steps': np.array(steps_numbers)}
         expert_data['model returns'] = pd.Series(model_data['returns'], index=expert_data.index)
-        pickle.dump(model_data, open('imitation/original/{}.pkl'.format(env), 'wb+'))
-    return report_results(expert_data, env)
+        pickle.dump(model_data, open('imitation/tnn_imitation/{}.pkl'.format(env_name), 'wb+'))
+    return report_results(expert_data, env_name)
 
 
 def report_results(report_data, env):
-    fig = plt.figure(figsize=(5, 5))
-    plt.plot_date(report_data['steps'], report_data['expert returns'], 'r-')
-    plt.plot_date(report_data['steps'], report_data['model returns'], 'g-')
+    plt.figure(figsize=(5, 5))
+    plt.plot(np.arange(1.0, 21.0, 1.0), report_data['expert returns'], 'r-')
+    plt.plot(np.arange(1.0, 21.0, 1.0), report_data['model returns'], 'g-')
+    plt.ylabel('returns')
+    plt.xlabel('rollouts')
+    plt.title('{} returns: imitation learning vs expert'.format(env))
     plt.show()
     return
 
