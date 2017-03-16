@@ -70,7 +70,8 @@ def run_dagger(env_name, num_runs, batch_size, steps):
     inputs, outputs, evaluations = extract_imitation(env_name)
 
     stats = {}
-    rewards = {}
+    rewards = []
+    step_count = []
 
     with tf.Session():
         env = gym.make(env_name)
@@ -86,16 +87,17 @@ def run_dagger(env_name, num_runs, batch_size, steps):
             data = run_regressor(model, env)
             new_inputs = data['observations']
             stats[i] = extract_stats(data)
-            rewards[i] = data['returns']
+            rewards.append(data['returns'])
+            step_count.append(data['steps'])
             new_outputs = get_experts_actions(new_inputs, policy)
             inputs = np.append(inputs, new_inputs, axis=0)
             outputs = np.append(outputs, new_outputs, axis=0)
-
+        reward_data = {'rewards': np.array(rewards), 'steps': np.array(step_count)}
         df = pd.DataFrame(stats).T
         df.index.name = 'iterations'
         df.to_csv('DAgger_results/{}_DAgger.csv'.format(env_name))
         pickle_name = 'DAgger_results/{}_DAgger_rewards.pkl'.format(env_name)
-        pickle.dump(rewards, open(pickle_name, 'wb+'))
+        pickle.dump(reward_data, open(pickle_name, 'wb+'))
     return
 
 
