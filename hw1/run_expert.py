@@ -16,7 +16,10 @@ import tf_util
 import gym
 import load_policy
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> e82c0ba0166126de9dfb8be3bc5a2670e178714d
 def main():
     import argparse
     parser = argparse.ArgumentParser()
@@ -42,19 +45,29 @@ def main():
         returns = []
         observations = []
         actions = []
+<<<<<<< HEAD
         steps = []
+=======
+>>>>>>> e82c0ba0166126de9dfb8be3bc5a2670e178714d
         for i in range(args.num_rollouts):
             print('iter', i)
             obs = env.reset()
             done = False
             totalr = 0.
+<<<<<<< HEAD
             totalsteps = 0
             while not done:
                 action = policy_fn(obs[None, :])
+=======
+            steps = 0
+            while not done:
+                action = policy_fn(obs[None,:])
+>>>>>>> e82c0ba0166126de9dfb8be3bc5a2670e178714d
                 observations.append(obs)
                 actions.append(action)
                 obs, r, done, _ = env.step(action)
                 totalr += r
+<<<<<<< HEAD
                 totalsteps += 1
                 if args.render:
                     env.render()
@@ -64,10 +77,20 @@ def main():
             returns.append(totalr)
             steps.append(totalsteps)
 
+=======
+                steps += 1
+                if args.render:
+                    env.render()
+                if steps % 100 == 0: print("%i/%i"%(steps, max_steps))
+                if steps >= max_steps:
+                    break
+            returns.append(totalr)
+>>>>>>> e82c0ba0166126de9dfb8be3bc5a2670e178714d
 
         print('returns', returns)
         print('mean return', np.mean(returns))
         print('std of return', np.std(returns))
+<<<<<<< HEAD
         print('steps', steps)
 
         expert_data = {'observations': np.array(observations),
@@ -76,6 +99,11 @@ def main():
                        'steps': np.array(steps)}
 
         #pickle.dump(expert_data, open('imitation/original/{}.pkl'.format(args.envname), 'wb+'))
+=======
+
+        expert_data = {'observations': np.array(observations),
+                       'actions': np.array(actions)}
+>>>>>>> e82c0ba0166126de9dfb8be3bc5a2670e178714d
 
 if __name__ == '__main__':
     main()
